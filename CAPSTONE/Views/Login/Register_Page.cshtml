@@ -1,0 +1,74 @@
+﻿
+@{
+    ViewBag.Title = "Register_Page";
+    Layout = "~/Views/Shared/_LoginHeader.cshtml";
+}
+
+<section class="wrapper" style="margin-top:0px !important">
+    <div class="row mt" style="margin-top:0px !important;">
+        <div class="div_center">
+            <form class="form-login">
+                <h2 class="form-login-heading">@ViewBag.id Registration Form</h2>
+                <div class="login-wrap">
+                    <label for="firstname" class="control-label col-lg-2">Firstname</label>
+                    <input class=" form-control" id="firstname" name="firstname" type="text">
+                    <br />
+                    <label for="middlename" class="control-label col-lg-2">Middle Name</label>
+                    <input class=" form-control" id="middlename" name="middlename" type="text">
+                    <br />
+                    <label for="lastname" class="control-label col-lg-2">Last Name</label>
+                    <input class=" form-control" id="lastname" name="lastname" type="text">
+                    <br />
+                    <label for="username" class="control-label col-lg-2">Username</label>
+                    <input class=" form-control" id="username" name="username" type="text">
+                    <br />
+                    <label for="password" class="control-label col-lg-2">Password</label>
+                    <input class=" form-control" id="password" name="password" type="password">
+                    <br />
+
+                    <button class="btn btn-theme btn-block" href="index.html" onclick="btn_register()" type="button"><i class="fa fa-book"></i> Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript">
+    var id="@ViewBag.id" , acnttype;
+    if (id == "Enforcer") acnttype = "TENFORCER";
+    else if (id == "Clerk") acnttype = "CLERK";
+    else if (id == "Admin") acnttype = "ADMIN";
+
+    function btn_register() {
+        $.ajax({
+            type: "POST",
+            url: "/Systems/insert_account",
+            dataType: "text",
+            data: JSON.stringify({
+                "fname": $("#firstname").val(),
+                "mname": $("#middlename").val(),
+                "lname": $("#lastname").val(),
+                "username": $("#username").val(),
+                "password": $("#password").val(),
+                "acnttype": acnttype
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                if (data == "ERROR") gritter("Error", "There was a problem registering the data.");
+                else {
+                    $('#tbl_apprehention tbody').html("");
+
+                    gritter("Success", "Successfully Registration.");
+                }
+                var url = '@Url.Action("Login_Page", "Login")?id=' + id;
+                window.location.href = url;
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "There was a problem registering the data.");
+            }
+        });
+    }
+
+</script>

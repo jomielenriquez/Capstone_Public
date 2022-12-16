@@ -1,0 +1,336 @@
+﻿
+@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@*<h2>Dashboard</h2>*@
+<div class="dashboard_div">
+    <h3>
+        Welcome to Traffic Violation Information Management with Electronic Ticketing System for Traffic Management Office-Tanauan
+    </h3>
+    <br />
+</div>
+<div class="dashboardBTN_div">
+    <button type="button" class="btn btn-primary btn-lg" onclick="get_total();">Total Number of Violators</button>
+    <button type="button" class="btn btn-primary btn-lg" onclick="get_total_today();">Today's List</button>
+</div>
+
+<div id="div_Reports">
+    <h3>Monthly Report</h3>
+    <canvas id="myChart" style="width:100%;max-width:100%; height:50vh"></canvas>
+    <h3>Weekly Report</h3>
+    <canvas id="weeklyReport" style="width:100%;max-width:100%; height:50vh"></canvas>
+    <h3>Daily Report</h3>
+    <canvas id="dailyReport" style="width:100%;max-width:100%; height:50vh"></canvas>
+</div>
+
+<h1 id="HolderName"></h1>
+<div id="divLocation">
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+
+<div class="modal fade " id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="myModalLabel"></h4>
+            </div>
+            <div class="modal-body" id="div_modal_body">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                @*<button type="button" class="btn btn-primary">Save changes</button>*@
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('li a').removeClass("active");
+    $('#tg-dashboard').addClass("active");
+
+    $(document).ready(function () {
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_get_pda_location",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                //$("#select_Violation").html('<option selected="selected">Please select</option>');
+                var Json_Data = JSON.parse(data);
+                console.log(Json_Data);
+
+                $("#HolderName").html("PDA User: " + Json_Data[0]["fname"] + " " + Json_Data[0]["lname"])
+                $("#divLocation").html('<iframe src="https://maps.google.com/maps?q=' + Json_Data[0]["latitude"] + ',' + Json_Data[0]["longetude"] + '&hl=es;z=14&amp;output=embed" width="100%" height="70vh" frameborder="0" style="border:0;height:80vh !important"></iframe>');
+                //for (var i = 0; i < Json_Data.length; i++) {
+                //    $("#select_Violation").append("<option value='" + Json_Data[i]["vid"] + "'>" + Json_Data[i]["vdesc"] + "</option>")
+                //}
+                $("#myModal_reload").modal('hide');
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+
+        if ($("#userType").val() == "ADMIN") {
+            $("#div_Reports").css("display", "none");
+            return;
+        }
+        // get monthly report
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_get_monthly_report",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                var Json_Data = JSON.parse(data);
+                //console.log(Json_Data);
+
+                const xVal = [];
+                const datas = [];
+
+                for (var i = 0; i < Json_Data.length; i++) {
+                    //    $("#select_Violation").append("<option value='" + Json_Data[i]["vid"] + "'>" + Json_Data[i]["vdesc"] + "</option>")
+                    xVal.push(Json_Data[i]["month-words"]);
+                    datas.push(Json_Data[i]["count"]);
+                }
+
+                var xValues = xVal;
+
+                new Chart("myChart", {
+                    type: "line",
+                    data: {
+                        labels: xValues,
+                        datasets: [{
+                            data: datas,
+                            borderColor: "#4ECDC4",
+                            fill: false
+                        },
+                            //{
+                            //    data: [1600, 1700, 1700, 1900, 2000, 2700, 4000, 5000, 6000, 7000],
+                            //    borderColor: "green",
+                            //    fill: false
+                            //}, {
+                            //    data: [300, 700, 2000, 5000, 6000, 4000, 2000, 1000, 200, 100],
+                            //    borderColor: "blue",
+                            //    fill: false
+                            //    }
+                        ]
+                    },
+                    options: {
+                        legend: { display: false }
+                    }
+                });
+
+                $("#myModal_reload").modal('hide');
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+
+        // get weekly report
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_get_weekly_report",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                var Json_Data = JSON.parse(data);
+
+                const xVal = [];
+                const datas = [];
+
+                for (var i = 0; i < Json_Data.length; i++) {
+                    xVal.push(Json_Data[i]["Week"]);
+                    datas.push(Json_Data[i]["Record"]);
+                }
+
+                var xValues = xVal;
+
+                new Chart("weeklyReport", {
+                    type: "line",
+                    data: {
+                        labels: xValues,
+                        datasets: [{
+                            data: datas,
+                            borderColor: "#4ECDC4",
+                            fill: false
+                        },
+                        ]
+                    },
+                    options: {
+                        legend: { display: false }
+                    }
+                });
+
+                $("#myModal_reload").modal('hide');
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+
+        // get daily report
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_get_daily_report",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                var Json_Data = JSON.parse(data);
+                
+                const xVal = [];
+                const datas = [];
+
+                for (var i = 0; i < Json_Data.length; i++) {
+                    xVal.push(Json_Data[i]["dateofapprehension"].split('T')[0]);
+                    datas.push(Json_Data[i]["Record"]);
+                }
+
+                var xValues = xVal;
+
+                new Chart("dailyReport", {
+                    type: "line",
+                    data: {
+                        labels: xValues,
+                        datasets: [{
+                            data: datas,
+                            borderColor: "#4ECDC4",
+                            fill: false
+                        },
+                        ]
+                    },
+                    options: {
+                        legend: { display: false }
+                    }
+                });
+
+                $("#myModal_reload").modal('hide');
+
+            },
+            error: function (textStatus, errorThrown) {
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    })
+
+    function get_total() {
+        $("#myModal_reload").modal("show");
+        $.ajax({
+            type: "POST",
+            url: "/Systems/get_total",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                var JsonData = JSON.parse(data);
+                //console.log(JsonData)
+                $("#myModalLabel").html("Total Number of Violators");
+
+                var insertToModalBody = `<h4>` + JsonData.Message + `</h4>` +
+                    `<section id="no-more-tables"><table class="table table-bordered table-striped table-condensed cf" id="tbl_today_list">
+                    <thead class="cf">
+                        <tr>
+                            <th>Name</th>
+                            <th>Violation</th>
+                            <th>Plate No.</th>
+                            <th>License No.</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table></section>`
+
+                $("#div_modal_body").html(insertToModalBody);
+
+                for (var i = 0; i < JsonData.List.length; i++) {
+                    var Row = `<tr><td class="Name" data-title="Name">` + JsonData.List[i]["fname"] + `</td>
+                            <td class="Violation" data-title="Violation">`+ JsonData.List[i]["vdesc"] + `</td>
+                            <td class="PlateNumber" data-title="PlateNumber">`+ JsonData.List[i]["plateno"] + `</td>
+                            <td class="LicenseNo" data-title="LicenseNo">`+ JsonData.List[i]["licenseno"] + `</td>
+                            <td class="DateOfApprehension" data-title="DateOfApprehension">`+ JsonData.List[i]["dateofapprehension"].split('T')[0] + `</td>`;
+                    $('#tbl_today_list tbody').append(Row);
+                }
+
+                $('#tbl_today_list').DataTable();
+
+                $("#myModal_reload").modal("hide");
+                $("#myModal").modal("show");
+
+            },
+            error: function (textStatus, errorThrown) {
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+    function get_total_today() {
+        $("#myModal_reload").modal("show");
+        $.ajax({
+            type: "POST",
+            url: "/Systems/get_total_today",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                var JsonData = JSON.parse(data);
+                console.log(JsonData)
+                $("#myModalLabel").html("Number of Violators Today");
+
+                var insertToModalBody = `<h4>` + JsonData.Message + `</h4>` +
+                    `<section id="no-more-tables"><table class="table table-bordered table-striped table-condensed cf" id="tbl_today_list">
+                    <thead class="cf">
+                        <tr>
+                            <th>Name</th>
+                            <th>Violation</th>
+                            <th>Plate No.</th>
+                            <th>License No.</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table></section>`
+
+                $("#div_modal_body").html(insertToModalBody);
+
+                for (var i = 0; i < JsonData.List.length; i++) {
+                    var Row = `<tr><td class="Name" data-title="Name">` + JsonData.List[i]["fname"] + `</td>
+                            <td class="Violation" data-title="Violation">`+ JsonData.List[i]["vdesc"] + `</td>
+                            <td class="PlateNumber" data-title="PlateNumber">`+ JsonData.List[i]["plateno"] + `</td>
+                            <td class="LicenseNo" data-title="LicenseNo">`+ JsonData.List[i]["licenseno"] + `</td>
+                            <td class="DateOfApprehension" data-title="DateOfApprehension">`+ JsonData.List[i]["dateofapprehension"].split('T')[0] + `</td>`;
+                    $('#tbl_today_list tbody').append(Row);
+                }
+
+                $('#tbl_today_list').DataTable();
+
+                $("#myModal_reload").modal("hide");
+                $("#myModal").modal("show");
+            },
+            error: function (textStatus, errorThrown) {
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+</script>

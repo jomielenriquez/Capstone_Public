@@ -1,0 +1,201 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div style="text-align:center">
+    <h2>Welcome to Traffic Violation Information Management with Electronic Ticketing System for Traffic Management Office-Tanauan</h2>
+</div>
+
+
+<div id="div_Reports">
+    <h3>Monthly Report</h3>
+    <canvas id="myChart" style="width:100%;max-width:100%; height:50vh"></canvas>
+    <h3>Weekly Report</h3>
+    <canvas id="weeklyReport" style="width:100%;max-width:100%; height:50vh"></canvas>
+    <h3>Daily Report</h3>
+    <canvas id="dailyReport" style="width:100%;max-width:100%; height:50vh"></canvas>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+<script type="text/javascript">
+    $('li a').removeClass("active");
+
+    $(document).ready(function () {
+        if ($("#userType").val() == "ADMIN") {
+            $("#div_Reports").css("display", "none");
+            return;
+        }
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_get_monthly_report",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                var Json_Data = JSON.parse(data);
+                console.log(Json_Data);
+
+                const xVal = [];
+                const datas = [];
+
+                for (var i = 0; i < Json_Data.length; i++) {
+                    //    $("#select_Violation").append("<option value='" + Json_Data[i]["vid"] + "'>" + Json_Data[i]["vdesc"] + "</option>")
+                    xVal.push(Json_Data[i]["month-words"]);
+                    datas.push(Json_Data[i]["count"]);
+                }
+
+                var xValues = xVal;
+
+                new Chart("myChart", {
+                    type: "line",
+                    data: {
+                        labels: xValues,
+                        datasets: [{
+                            data: datas,
+                            borderColor: "#4ECDC4",
+                            fill: false
+                        },
+                            //{
+                            //    data: [1600, 1700, 1700, 1900, 2000, 2700, 4000, 5000, 6000, 7000],
+                            //    borderColor: "green",
+                            //    fill: false
+                            //}, {
+                            //    data: [300, 700, 2000, 5000, 6000, 4000, 2000, 1000, 200, 100],
+                            //    borderColor: "blue",
+                            //    fill: false
+                            //    }
+                        ]
+                    },
+                    options: {
+                        legend: { display: false }
+                    }
+                });
+
+                $("#myModal_reload").modal('hide');
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+
+        // get weekly report
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_get_weekly_report",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                var Json_Data = JSON.parse(data);
+
+                const xVal = [];
+                const datas = [];
+
+                for (var i = 0; i < Json_Data.length; i++) {
+                    xVal.push(Json_Data[i]["Week"]);
+                    datas.push(Json_Data[i]["Record"]);
+                }
+
+                var xValues = xVal;
+
+                new Chart("weeklyReport", {
+                    type: "line",
+                    data: {
+                        labels: xValues,
+                        datasets: [{
+                            data: datas,
+                            borderColor: "#4ECDC4",
+                            fill: false
+                        },
+                        ]
+                    },
+                    options: {
+                        legend: { display: false }
+                    }
+                });
+
+                $("#myModal_reload").modal('hide');
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+
+        // get daily report
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_get_daily_report",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                var Json_Data = JSON.parse(data);
+
+                const xVal = [];
+                const datas = [];
+
+                for (var i = 0; i < Json_Data.length; i++) {
+                    xVal.push(Json_Data[i]["dateofapprehension"].split('T')[0]);
+                    datas.push(Json_Data[i]["Record"]);
+                }
+
+                var xValues = xVal;
+
+                new Chart("dailyReport", {
+                    type: "line",
+                    data: {
+                        labels: xValues,
+                        datasets: [{
+                            data: datas,
+                            borderColor: "#4ECDC4",
+                            fill: false
+                        },
+                        ]
+                    },
+                    options: {
+                        legend: { display: false }
+                    }
+                });
+
+                $("#myModal_reload").modal('hide');
+
+            },
+            error: function (textStatus, errorThrown) {
+                gritter("Error", "Error processing the request.");
+            }
+        });
+        //var xValues = ["january", 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+
+        //new Chart("myChart", {
+        //    type: "line",
+        //    data: {
+        //        labels: xValues,
+        //        datasets: [{
+        //            data: [860, 1140, 1060, 1060, 1070, 1110, 1330, 2210, 7830, 2478],
+        //            borderColor: "red",
+        //            fill: false
+        //        },
+        //        //{
+        //        //    data: [1600, 1700, 1700, 1900, 2000, 2700, 4000, 5000, 6000, 7000],
+        //        //    borderColor: "green",
+        //        //    fill: false
+        //        //}, {
+        //        //    data: [300, 700, 2000, 5000, 6000, 4000, 2000, 1000, 200, 100],
+        //        //    borderColor: "blue",
+        //        //    fill: false
+        //        //    }
+        //        ]
+        //    },
+        //    options: {
+        //        legend: { display: false }
+        //    }
+        //});
+    })
+</script>

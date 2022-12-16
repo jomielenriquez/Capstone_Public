@@ -1,0 +1,47 @@
+﻿
+@{
+    ViewBag.Title = "Register";
+    Layout = "~/Views/Shared/_LoginHeader.cshtml";
+}
+<section class="wrapper">
+    <div class="row mt">
+        <div class="div_center">
+            <h2>Register</h2>
+            <form class="form-horizontal">
+                <fieldset>
+                    <legend></legend>
+                    <div class="form-group">
+                        <button type="button" id="Clerk" class="login btn btn-default btn_max_width" onclick="btnLogin(this)">Register as Clerk</button>
+                    </div>
+                    @*<div class="form-group">
+                        <button type="button" id="Enforcer" class="login btn btn-default btn_max_width" onclick="btnLogin(this)">Register as Traffic Enforcer</button>
+                    </div>*@
+                    @*<div class="form-group">
+                        <div class="col-lg-10 col-lg-offset-1">
+                            <button id="btnSubmit" type="button" class="btn btn-success" onclick="Register_btn();" disabled>Confirm</button>
+                        </div>
+                    </div>*@
+                </fieldset>
+            </form>
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+    function btnLogin(btn) {
+        $("button.login").removeClass("btn-primary");
+        $("button.login").addClass("login");
+        $("button.login").addClass("btn");
+        $("button.login").addClass("btn-default");
+        $("button.login").addClass("btn_max_width");
+        $("#" + btn.id).removeClass("btn-default");
+        $("#" + btn.id).addClass("btn-primary");
+
+        $("#btnSubmit").removeAttr("disabled");
+        Register_btn();
+    }
+    function Register_btn() {
+        var Registeras = $("button.btn-primary").attr("id");
+        var url = '@Url.Action("Register_Page", "Login")?id=' + Registeras;
+        window.location.href = url;
+    }
+</script>

@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Dashboard">
+    <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
+    <title>@ViewBag.Title - CAPSTONE</title>
+    <link href="~/img/favicon.ico" rel="icon">
+
+    @Styles.Render("~/Content/DataTable")
+
+    @Styles.Render("~/Content/Bootstrap")
+</head>
+
+<body>
+    <section id="container">
+
+        <header class="header black-bg">
+            <a href="" class="logo"><b>TMO<span> TANAUAN</span></b></a>
+            @*<div class="top-menu">
+                    <ul class="nav pull-right top-menu">
+                        <li><a class="logout" href="login.html">Logout</a></li>
+                    </ul>
+                </div>*@
+        </header>
+
+        <section id="main-content" style="margin:0 150px 0 150px; text-align:center;">
+            <section class="wrapper">
+                <!-- page start-->
+                <div class="row mt">
+                    @Scripts.Render("~/Script/jquery")
+                    @RenderBody()
+                </div>
+                <div class="modal fade " id="myModal_reload" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+                    <div style="text-align:center;font-size:50px;color:white;padding-top:45vh;">
+                        <div class="spinner-border" role="status">
+                            <i class="fa fa-circle-o-notch fa-spin"></i>
+                            @* fa-circle-o-notch *@
+                            @* fa-spinner *@
+                            @* fa-refresh *@
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <!-- /wrapper -->
+        </section>
+        <!-- /MAIN CONTENT -->
+        <!--main content end-->
+        <!--footer start-->
+        <footer class="site-footer">
+            <div class="text-center">
+                <p>
+                    &copy; Copyrights <strong>Traffic Management Office of Tanauan</strong>. All Rights Reserved
+                </p>
+                <div class="credits">
+                    Created by Traffic Management Office of Tanauan
+                </div>
+                <a href="inbox.html#" class="go-top">
+                    <i class="fa fa-angle-up"></i>
+                </a>
+            </div>
+        </footer>
+        <!--footer end-->
+    </section>
+    @Scripts.Render("~/Script/Bootstrap")
+    @Scripts.Render("~/Script/DataTables")
+</body>
+
+</html>
+
+

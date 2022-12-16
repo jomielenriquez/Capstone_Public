@@ -1,0 +1,282 @@
+﻿
+@{
+    ViewBag.Title = "Enforcer Accounts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row mt">
+    <div class="col-lg-12">
+        <div class="content-panel">
+            <h4><i class="fa fa-angle-right"></i> Traffic Enforcer Accounts</h4>
+            <section id="no-more-tables">
+                @* tbl enforcer account will be inserted here programmatically *@
+            </section>
+            <div style="padding-right:0px; height:40px; padding-right:5px;">
+                <button type="button" class="btn btn-round btn-success" style="float:right" onclick="addAccount()">Add</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade " id="myModal_Edit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="myModalLabel">Are you sure you want to create this account?</h4>
+                <input id="input_rowid" style="display:none" />
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal style-form">
+                    <input type="text" id="inp_acntid" style="display:none;"/>
+                    <div class="form-group">
+                        <label class="col-sm-2 col-sm-2 control-label" for="inp_Name">Full Name</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inp_Name" name="inp_Name">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 col-sm-2 control-label" for="inp_MName">Middle Name</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inp_MName" name="inp_MName" maxlength="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 col-sm-2 control-label" for="inp_LName">Last Name</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inp_LName" name="inp_LName">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 col-sm-2 control-label" for="inp_UserName">Username</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="inp_UserName" name="inp_UserName">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 col-sm-2 control-label" for="inp_Pass">Password</label>
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" id="inp_Pass" name="inp_Pass">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-primary" onclick="UpdateBtn()" id="Modal_btn_Update">Update</button>
+                <button type="button" class="btn btn-primary" onclick="saveNewAccount()" id="Modal_btn_Save">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Scripts.Render("~/Script/jquery")
+
+<script type="text/javascript">
+    $('li a').removeClass("active");
+    $('#tg-Eaccounts').addClass("active");
+
+    $(document).ready(function () {
+        updateGrid();
+    });
+
+    function updateGrid() {
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        document.getElementById("no-more-tables").innerHTML = `
+            <table class="table table-bordered table-striped table-condensed cf" id="tbl_Confiscated">
+                    <thead class="cf">
+                        <tr>
+                            <th>Fullname</th>
+                            <th>Username</th>
+                            <th style="display:none"></th>
+                            <th style="display:none"></th>
+                            <th style="display:none"></th>
+                            <th style="display:none"></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>`;
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_get_all_enforcer_account",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                var Json_Data = JSON.parse(data);
+                for (var i = 0; i < Json_Data.length; i++) {
+                    if (Json_Data[i]["violation"] != "DRIVING WITHOUT DRIVER'S LICENSE" && Json_Data[i]["isSettled"] != 1) {
+                        var Row = `<tr id="` + Json_Data[i]["acntid"] + `"><td class="fullname" data-title="fullname">` + Json_Data[i]["fullname"] + `</td>
+                                <td class="UserName" data-title="UserName">`+ Json_Data[i]["username"] + `</td>
+                                <td class="FirstName" data-title="FirstName" style="display:none">`+ Json_Data[i]["fname"] + `</td>
+                                <td class="MiddleName" data-title="MiddleName" style="display:none">`+ Json_Data[i]["mname"] + `</td>
+                                <td class="LastName" data-title="LastName" style="display:none">`+ Json_Data[i]["lname"] + `</td>
+                                <td class="Password" data-title="Password" style="display:none">`+ Json_Data[i]["password"] + `</td>
+                                <td class="Action" data-title="Action">
+                                    <button type="button" class="btn btn-round btn-info btn-sm" onclick="EditButtonOnClick(this)"><i class="fa fa-pencil-square-o"></i> Edit</button>
+                                </td>`;
+                        $('#tbl_Confiscated tbody').append(Row);
+
+                    }
+                }
+                $('#tbl_Confiscated').DataTable();
+                $("#myModal_reload").modal("hide");
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+
+    function EditButtonOnClick(btn) {
+        $("#Modal_btn_Save").css("display", "none");
+        $("#Modal_btn_Update").css("display", "");
+
+        var target_row = $(btn).closest('tr');
+        var acntid = target_row.attr('id'),
+            fname = target_row.find('td.FirstName').text(),
+            mname = target_row.find('td.MiddleName').text(),
+            lname = target_row.find('td.LastName').text(),
+            username = target_row.find('td.UserName').text(),
+            password = target_row.find('td.Password').text();
+
+        $("#inp_acntid").val(acntid);
+        $("#inp_Name").val(fname);
+        $("#inp_MName").val(mname);
+        $("#inp_LName").val(lname);
+        $("#inp_UserName").val(username);
+        $("#inp_Pass").val(password);
+
+        console.log(acntid);
+
+        $("#myModal_Edit").modal("show");
+        $("#myModalLabel").html("Edit Enforcer Account");
+    }
+
+    function UpdateBtn() {
+        if (!ModalValidation()) return;
+
+        $("#myModal_Edit").modal("hide");
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        var firstName = $("#inp_Name").val(),
+            middleName = $("#inp_MName").val(),
+            lastName = $("#inp_LName").val(),
+            userName = $("#inp_UserName").val(),
+            password = $("#inp_Pass").val(),
+            acntid = $("#inp_acntid").val();
+
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_update_account",
+            dataType: "text",
+            data: JSON.stringify({
+                "acntid": acntid,
+                "fname": firstName,
+                "mname": middleName,
+                "lname": lastName,
+                "userName": userName,
+                "password": password,
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                gritter("Success", "Successfully Updated");
+
+                //$('#tbl_clear tbody').html("");
+                updateGrid();
+            },
+            error: function (textStatus, errorThrown) {
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+
+    function addAccount() {
+        $("#Modal_btn_Save").css("display", "");
+        $("#Modal_btn_Update").css("display", "none");
+        $("#inp_Name").val("");
+        $("#inp_MName").val("");
+        $("#inp_LName").val("");
+        $("#inp_UserName").val("tenforcer");
+        $("#inp_Pass").val("tenforcer");
+        $("#inp_acntid").val("");
+        $("#myModal_Edit").modal("show");
+    }
+
+    function saveNewAccount() {
+        if (!ModalValidation()) return;
+
+        $("#myModal_Edit").modal("hide");
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        var firstName = $("#inp_Name").val(),
+            middleName = $("#inp_MName").val() + ".",
+            lastName = $("#inp_LName").val(),
+            userName = $("#inp_UserName").val(),
+            password = $("#inp_Pass").val();
+
+        $.ajax({
+            type: "POST",
+            url: "/Systems/insert_account",
+            dataType: "text",
+            data: JSON.stringify({
+                "fname": firstName,
+                "mname": middleName,
+                "lname": lastName,
+                "username": userName,
+                "password": password,
+                "acnttype": 'TENFORCER'
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                gritter("Success", "Successfully Created New Account.");
+                gritter("NOTE", "Username and password for newly created account will be 'tenforcer'.");
+
+                //$('#tbl_clear tbody').html("");
+                updateGrid();
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "There was a problem registering the data.");
+            }
+        });
+
+    }
+
+    function ModalValidation() {
+        var firstName = $("#inp_Name").val(),
+            middleName = $("#inp_MName").val() + ".",
+            lastName = $("#inp_LName").val(),
+            userName = $("#inp_UserName").val(),
+            password = $("#inp_Pass").val();
+
+        if (firstName.length < 4) {
+            gritter("Error", "Please enter first name atleast 4 characters");
+            return false;
+        }
+        if (middleName.length < 1) {
+            gritter("Error", "Please enter middle name atleast 1 character");
+            return false;
+        }
+        if (lastName.length < 4) {
+            gritter("Error", "Please enter last name atleast 4 characters");
+            return false;
+        }
+        if (userName.length < 4) {
+            gritter("Error", "Please enter user name atleast 4 characters");
+            return false;
+        }
+        if (password.length < 4) {
+            gritter("Error", "Please enter password atleast 4 characters");
+            return false;
+        }
+
+        return true;
+    }
+
+</script>

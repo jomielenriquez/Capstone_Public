@@ -1,0 +1,161 @@
+﻿
+@{
+    ViewBag.Title = "Daily";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<div class="row mt">
+    <div class="col-lg-12">
+        <div class="content-panel">
+            <h4><i class="fa fa-angle-right"></i> Daily Reports</h4>
+            <section id="no-more-tables">
+                <table class="table table-bordered table-striped table-condensed cf" id="tbl_apprehention">
+                    <thead class="cf">
+                        <tr>
+                            <th>Name</th>
+                            <th>Address</th>
+                            <th>License No.</th>
+                            <th>Vehicle Type</th>
+                            <th>Place of Violation</th>
+                            <th>Violation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </section>
+            @*<div style="padding-right:0px; height:40px; padding-right:5px;">
+                    <button type="button" class="btn btn-round btn-success" style="float:right" onclick="">Confirm</button>
+                </div>*@
+        </div>
+    </div>
+</div>
+
+<div style="text-align:center">
+
+</div>
+
+@Scripts.Render("~/Script/jquery")
+<script type="text/javascript">
+    $('li a').removeClass("active");
+    $('#tg-daily').addClass("active");
+
+    $(document).ready(function () {
+        console.log("ready");
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        updateGrid();
+
+    });
+    function updateGrid() {
+        $.ajax({
+            type: "POST",
+            url: "/Systems/getdailyreport",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                //gritter("Success", "see console log.");
+                var Json_Data = JSON.parse(data);
+                for (var i = 0; i < Json_Data.length; i++) {
+                    var Row = `<tr id='` + Json_Data[i]["tid"] + `'><td class="Name" data-title="Name">` + Json_Data[i]["fname"] + `</td>
+                            <td class="Address" data-title="Address">`+ Json_Data[i]["address"] + `</td>
+                            <td class="License" data-title="License">`+ Json_Data[i]["licenseno"] + `</td>
+                            <td class="Vehicle" data-title="Vehicle">`+ Json_Data[i]["vehicletype"] + `</td>
+                            <td class="Place" data-title="Place">`+ Json_Data[i]["placeofviolation"] + `</td>
+                            <td>`+ Json_Data[i]["vdesc"] + `</td>
+                            <td class="Violation" data-title="Violation" style='display:none'>`+ Json_Data[i]["violationid"] + `</td>`;
+                    $('#tbl_apprehention tbody').append(Row);
+
+                }
+                if (Json_Data.length == 0) $('#tbl_apprehention tbody').append('<tr><td colspan="7" style="text-align:center">No Record</td></tr>');
+                $("#myModal_reload").modal("hide");
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+    function EditBtnOnclick(btn) {
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+
+        var target_row = $(btn).closest('tr');
+        var rowid = target_row.attr('id'),
+            rowname = target_row.find('td.Name').text(),
+            rowaddress = target_row.find('td.Address').text(),
+            rowlicense = target_row.find('td.License').text(),
+            rowvehicle = target_row.find('td.Vehicle').text(),
+            rowplace = target_row.find('td.Place').text(),
+            rowviolation = target_row.find('td.Violation').text();
+
+        $("#inp_name").val(rowname);
+        $("#inp_address").val(rowaddress);
+        $("#inp_LicenseNo").val(rowlicense);
+        $("#inp_VehicleType").val(rowvehicle);
+        $("#inp_PlaceOfViolation").val(rowplace);
+        $("#input_rowid").val(rowid);
+
+        // get dropdown values
+        $.ajax({
+            type: "POST",
+            url: "/Systems/get_violation",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                $("#select_Violation").html('<option selected="selected">Please select</option>');
+                var Json_Data = JSON.parse(data);
+                console.log(Json_Data);
+                for (var i = 0; i < Json_Data.length; i++) {
+                    $("#select_Violation").append("<option value='" + Json_Data[i]["vid"] + "'>" + Json_Data[i]["vdesc"] + "</option>")
+                }
+
+                $("#select_Violation").val(rowviolation).change();
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+        //$("#select_Violation option[value=" + rowviolation + "]").attr('selected', 'selected');
+        $("#myModal_reload").modal("hide");
+        $("#myModal_edit").modal("show");
+    }
+    function btn_saveChanges() {
+        $("#myModal_edit").modal("hide");
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        $.ajax({
+            type: "POST",
+            url: "/Systems/insert_ticketcitation",
+            dataType: "text",
+            data: JSON.stringify({
+                "tid": $("#input_rowid").val(),
+                "fname": $("#inp_name").val(),
+                "address": $("#inp_address").val(),
+                "licenseno": $("#inp_LicenseNo").val(),
+                "vehicletype": $("#inp_VehicleType").val(),
+                "placeofviolation": $("#inp_PlaceOfViolation").val(),
+                "violationid": $("#select_Violation").val()
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                if (data == "ERROR") gritter("Error", "There was a problem updating the data.");
+                else {
+                    $('#tbl_apprehention tbody').html("");
+
+                    updateGrid();
+                    gritter("Success", "Successfully updated.");
+                }
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "There was a problem updating the data.");
+            }
+        });
+    }
+</script>

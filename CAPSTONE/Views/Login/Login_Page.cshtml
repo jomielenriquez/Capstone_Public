@@ -1,0 +1,79 @@
+﻿
+@{
+    ViewBag.Title = "Login_Page";
+    Layout = "~/Views/Shared/_LoginHeader.cshtml";
+}
+<section class="wrapper">
+    <div class="row mt">
+        <div class="div_center">
+            <form class="form-login">
+                <h2 class="form-login-heading">@ViewBag.id Login Form</h2>
+                <div class="login-wrap">
+                    <input type="text" class="form-control" placeholder="User ID" autofocus="" id="inpt_username">
+                    <br>
+                    <input type="password" class="form-control" placeholder="Password" id="inpt_pass">
+                    <label class="checkbox">
+                        <input type="checkbox" value="Show" onclick="showPass()" id="inpt_showpass"> Show password
+                    </label>
+                    <button class="btn btn-theme btn-block" href="index.html" type="button" onclick="btn_login()" id="btn_Login"><i class="fa fa-lock"></i> SIGN IN</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+<script type="text/javascript">
+    var acnttype = "@ViewBag.id";
+    if (acnttype == "Traffic Enforcer") acnttype = "TENFORCER";
+    else if (acnttype == "Clerk") acnttype = "CLERK";
+    else if (acnttype == "Admin") acnttype = "ADMIN";
+    var input = document.getElementById("inpt_pass");
+
+    // Execute a function when the user presses a key on the keyboard
+    input.addEventListener("keypress", function (event) {
+        // If the user presses the "Enter" key on the keyboard
+        if (event.key === "Enter") {
+            console.log("wneter");
+            // Cancel the default action, if needed
+            event.preventDefault();
+            // Trigger the button element with a click
+            document.getElementById("btn_Login").click();
+        }
+    });
+
+    function showPass() {
+        if ($("#inpt_showpass").is(':checked')) {
+            $('#inpt_pass').attr('type', 'text');
+        }
+        else {
+            $('#inpt_pass').attr('type', 'password');
+        }
+    }
+    function btn_login() {
+        $.ajax({
+            type: "POST",
+            url: "/Systems/LoginUser",
+            dataType: "text",
+            data: JSON.stringify({
+                "username": $("#inpt_username").val(),
+                "password": $("#inpt_pass").val(),
+                "acnttype": acnttype
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                if (data == "Error") {
+                    $("#inputUsername").val("");
+                    $("#inputPassword").val("");
+                    gritter("Error", "Invalid username or password.");
+                    //alert("Invalid Username or password");
+                    return 0;
+                }
+                window.location.replace("/Systems/Index?id=" + data);
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+</script>

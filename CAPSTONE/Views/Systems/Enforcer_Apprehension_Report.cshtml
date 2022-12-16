@@ -1,0 +1,313 @@
+﻿
+@{
+    ViewBag.Title = "Enforcer_Apprehension_Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row mt">
+    <div class="col-lg-12">
+        <div class="content-panel">
+            <section id="">
+                <table class="table  table-condensed c" id="tbl_apprehention">
+                    <tbody>
+                        <tr>
+                            <td colspan="6" style="text-align:center;"><h4><b>Traffic Citation Ticket</b></h4></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align:center;" colspan="3">Last Name</td>
+                            <td style="text-align:center;" colspan="2">First Name</td>
+                            <td style="text-align:center;">MI</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"><input type="text" class="form-control" id="input_lname"></td>
+                            <td colspan="2"><input type="text" class="form-control" id="input_fname"></td>
+                            <td><input type="text" class="form-control" id="input_mi" size="1" maxlength="1"></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align:center;" colspan="3">House No</td>
+                            <td style="text-align:center;" colspan="2">St. Subd.</td>
+                            <td style="text-align:center;" colspan="1">City</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"><input type="text" class="form-control" id="input_addrno"></td>
+                            <td colspan="2"><input type="text" class="form-control" id="input_addrst"></td>
+                            <td colspan="1"><input type="text" class="form-control" id="input_addrcity"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"><h5>License No.</h5>
+                            <input type="text" class="form-control" id="input_licenseno"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"><h5>Birth Date</h5>
+                            <input type="date" class="form-control" id="input_birthdate"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"><h5>Date of Apprehension</h5>
+                            <input type="date" class="form-control" id="input_dateofapprehension"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6"><h5>Place of Violation (Street, Barangay)</h5>
+                            @*<input type="text" class="form-control" id="input_placeofviolation">*@
+                            <select class="form-control" name="select_PlaceViolation" id="select_PlaceViolation">
+                                <option selected="selected">Please select</option>
+                            </select>
+                            </td>
+
+                        </tr>
+                        <tr>
+                            <td colspan="6"><h5>Vehicle Type</h5><input type="text" class="form-control" id="input_vehicletype"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6">
+                                <h5>Classification</h5>
+                                <label class="checkbox-inline">
+                                    <input type="radio" id="" value="Private" name="radio_classification"> Private
+                                </label>
+                                <label class="checkbox-inline">
+                                    <input type="radio" id="" value="Public" name="radio_classification"> Public
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="1"><h5>Plate No.</h5></td>
+                            <td colspan="5"><input type="text" class="form-control" id="input_plateno"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" style="text-align:center;">
+                                You are hereby cited for commiting the traffic and administrative violation here under.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"><h5>Violation</h5></td>
+                            <td colspan="3">
+                                <select class="form-control" name="select_Violation" id="select_Violation">
+                                    <option selected="selected">Please select</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" style="text-align:center;">
+                                <button type="button" class="btn btn-primary" onclick="btn_submit()">Submit</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade " id="myModal_Notification" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="myModalLabel">Success</h4>
+                <input id="input_rowid" style="display:none" " />
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal style-form">
+                    <div class="form-group">
+                        <table style="margin:auto" id="tbl_success">
+                            <tbody>
+                                
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" onclick="location.reload();">OK</button>
+                <button type="button" class="btn btn-default" onclick="btn_GoToReport();">Redirect to Apprehensions</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var user_uid="@Model.currentuser.uid";
+    $('li a').removeClass("active");
+    $('#tg-apprehensions').addClass("active");
+
+    $(document).ready(function () {
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        $.ajax({
+            type: "POST",
+            url: "/Systems/get_violation",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                $("#select_Violation").html('<option selected="selected">Please select</option>');
+                var Json_Data = JSON.parse(data);
+                //console.log(Json_Data);
+                for (var i = 0; i < Json_Data.length; i++) {
+                    $("#select_Violation").append("<option value='" + Json_Data[i]["vid"] + "'>" + Json_Data[i]["vdesc"] + "</option>")
+                }
+                $("#myModal_reload").modal('hide');
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+
+        $.ajax({
+            type: "POST",
+            url: "/Systems/prop_get_compound",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                $("#select_PlaceViolation").html('<option selected="selected">Please select</option>');
+                var Json_Data = JSON.parse(data);
+                console.log(Json_Data);
+                for (var i = 0; i < Json_Data.length; i++) {
+                    $("#select_PlaceViolation").append("<option value='" + Json_Data[i]["cid"] + "'>" + Json_Data[i]["Compound"] + "</option>")
+                }
+                $("#myModal_reload").modal('hide');
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    });
+
+    function btn_submit() {
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+
+        var fname = $("#input_fname").val() + " " + $("#input_mi").val().toUpperCase() + ". " + $("#input_lname").val(),
+            address = $("#input_addrno").val() + " " + $("#input_addrst").val().toUpperCase() + "  " + $("#input_addrcity").val(),
+            licneseno = $("#input_licenseno").val(),
+            birthdate = $("#input_birthdate").val(),
+            dateofapprehension = $("#input_dateofapprehension").val(),
+            placeofviolation = $("#select_PlaceViolation option:selected").text(),//$("#input_placeofviolation").val() ,
+            violationid = $("#select_Violation").val(),
+            vehicletype = $("#input_vehicletype").val(),
+            classification = $('input[name="radio_classification"]:checked').val(),
+            plateno = $("#input_plateno").val();
+
+        var counterror = 0;
+        if ($("#input_fname").val()=="") {
+            $("#input_fname").css("border-color", "red");
+            counterror++;
+        }
+        if ($("#input_mi").val()=="") {
+            $("#input_mi").css("border-color", "red");
+            counterror++;
+        }
+        if ($("#input_lname").val() == "") {
+            $("#input_lname").css("border-color", "red");
+            counterror++;
+        }
+        if ($("#input_addrno").val() == "") {
+            $("#input_addrno").css("border-color", "red");
+            counterror++;
+        }
+        if ($("#input_addrst").val() == "") {
+            $("#input_addrst").css("border-color", "red");
+            counterror++;
+        }
+        if ($("#input_addrcity").val() == "") {
+            $("#input_addrcity").css("border-color", "red");
+            counterror++;
+        }
+        if ($("#input_licenseno").val() == "") {
+            $("#input_licenseno").css("border-color", "red");
+            counterror++;
+        }
+        if ($("#input_birthdate").val() == "") {
+            $("#input_birthdate").css("border-color", "red");
+            counterror++;
+        }
+        if ($("#input_dateofapprehension").val() == "") {
+            $("#input_dateofapprehension").css("border-color", "red");
+            counterror++;
+        }
+        //if ($("#input_placeofviolation").val() == "") {
+        //    $("#input_placeofviolation").css("border-color", "red");
+        //    counterror++;
+        //}
+        if ($("#select_PlaceViolation option:selected").text() == "") {
+            $("#select_PlaceViolation").css("border-color", "red");
+            counterror++;
+        }
+        if ($("#select_Violation").val() == "Please select") {
+            $("#select_Violation").css("border-color", "red");
+            counterror++;
+        }
+        if ($("#input_vehicletype").val() == "") {
+            $("#input_vehicletype").css("border-color", "red");
+            counterror++;
+        }
+        if ($("#input_plateno").val() == "") {
+            $("#input_plateno").css("border-color", "red");
+            counterror++;
+        }
+        if ($("input[name='radio_classification']:checked").length == 0) {
+            $("input[name='radio_classification']").css("border-color", "red");
+            counterror++;
+        }
+        if (counterror > 0) {
+            $("#myModal_reload").modal('hide');
+            return;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/Systems/insert_citation",
+            dataType: "text",
+            data: JSON.stringify({
+                "fname":fname,
+                "address": address,
+                "licneseno": licneseno,
+                "birthdate": birthdate,
+                "dateofapprehension": dateofapprehension,
+                "placeofviolation": placeofviolation,
+                "violationid": violationid,
+                "vehicletype": vehicletype,
+                "classification": classification,
+                "plateno": plateno
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                $("#myModal_reload").modal('hide');
+                if (data == "SUCCESS") {
+                    gritter("Success", "Uploaded the data successfully.");
+                    $("#tbl_success tbody").html("");
+                    $("#tbl_success tbody").append(`
+                        <tr><td>Name:</td><td>`+fname+`</td></tr>
+                        <tr><td>Address:</td><td>`+ address + `</td></tr>
+                        <tr><td>License No.:</td><td>`+ licneseno + `</td></tr>
+                        <tr><td>Birth Date:</td><td>`+ birthdate + `</td></tr>
+                        <tr><td>Date of Apprehension:</td><td>`+ dateofapprehension + `</td></tr>
+                        <tr><td>Place of Violation:</td><td>`+ placeofviolation + `</td></tr>
+                        <tr><td>Vehicle Type:</td><td>`+ vehicletype + `</td></tr>
+                        <tr><td>Classification:</td><td>`+ classification + `</td></tr>
+                        <tr><td>Plate No.:</td><td>`+ plateno +`</td></tr>
+                    `);
+                    $("#myModal_Notification").modal({ backdrop: 'static', keyboard: false }, "show");
+                }
+            },
+            error: function (textStatus, errorThrown) {
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+
+    function btn_GoToReport() {
+        var url = '@Url.Action("Apprehension_Report", "Systems")?id=' + user_uid;
+        window.location.href = url;
+    }
+
+    $("input, select").change(function (e) {
+        if ($(this).val() == "" || $(this).val() == null) $(this).css("border-color", "red");
+        else $(this).css("border-color", "");
+    })
+</script>

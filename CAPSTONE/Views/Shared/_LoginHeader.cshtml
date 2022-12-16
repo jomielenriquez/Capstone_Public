@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Dashboard">
+    <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
+    <title>@ViewBag.Title - CAPSTONE</title>
+    @{
+        if (ViewBag.Title == "Login") { ViewBag.Prev = "Index"; }
+        else if (ViewBag.Title == "Login_Page") { ViewBag.Prev = "Login"; }
+        else if (ViewBag.Title == "Register") { ViewBag.Prev = "Index"; }
+        else if (ViewBag.Title == "Register_Page") { ViewBag.Prev = "Register"; }
+    }
+    <link href="~/img/favicon.ico" rel="icon">
+    <!-- Favicons -->
+    @*<link href="img/favicon.png" rel="icon">
+        <link href="img/apple-touch-icon.png" rel="apple-touch-icon">*@
+
+    @Styles.Render("~/Content/Bootstrap")
+</head>
+
+<body>
+    <section id="container">
+
+        <header class="header black-bg">
+            <a href="" class="logo"><b>TMO<span> TANAUAN</span></b></a>
+            <div class="top-menu">
+                <ul class="nav pull-right top-menu">
+                    <li><a class="logout" href="@Url.Action(ViewBag.Prev,"Login")">Back</a></li>
+                </ul>
+            </div>
+        </header>
+
+        <section id="main-content" style="margin:0 150px 0 150px; text-align:center;">
+            @*<section class="wrapper">
+                <div class="row mt">
+                </div>
+            </section>*@
+                    @RenderBody()
+            <!-- /wrapper -->
+        </section>
+        <!-- /MAIN CONTENT -->
+        <!--main content end-->
+        <!--footer start-->
+        <footer class="site-footer">
+            <div class="text-center">
+                <p>
+                    &copy; Copyrights <strong>Traffic Management Office of Tanauan</strong>. All Rights Reserved
+                </p>
+                <div class="credits">
+                    Created by Traffic Management Office of Tanauan
+                </div>
+                <a href="inbox.html#" class="go-top">
+                    <i class="fa fa-angle-up"></i>
+                </a>
+            </div>
+        </footer>
+        <!--footer end-->
+    </section>
+    @Scripts.Render("~/Script/Bootstrap")
+</body>
+
+</html>
+
+

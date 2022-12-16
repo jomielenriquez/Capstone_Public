@@ -1,0 +1,65 @@
+﻿
+@{
+    ViewBag.Title = "Statics";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="row mt">
+    <div class="col-lg-12">
+        <div class="content-panel">
+            <h4><i class="fa fa-angle-right"></i> Total Number of Violators per Violations</h4>
+            <section id="no-more-tables">
+                <table class="table table-bordered table-striped table-condensed cf" id="tbl_statistics">
+                    <thead class="cf">
+                        <tr>
+                            <th>Traffic Violations</th>
+                            <th>Fines of Violations</th>
+                            <th>Total Number of Violators per Violations</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $('li a').removeClass("active");
+    $('#tg-statics').addClass("active");
+
+    $(document).ready(function () {
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        updateGrid();
+        //$("#myModal_reload").modal("hide"); // remove when API is working
+    });
+
+    function updateGrid() {
+        $.ajax({
+            type: "POST",
+            url: "/Systems/get_statistics",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                var Json_Data = JSON.parse(data);
+                for (var i = 0; i < Json_Data.length; i++) {
+                    var Row = `<tr><td class="Name" data-title="Name">` + Json_Data[i]["trafficviolation"] + `</td>
+                            <td class="Address" data-title="Address">P `+ Json_Data[i]["finesofviolation"] + `.00</td>
+                            <td class="Address" data-title="Address">`+ Json_Data[i]["violationtotalnumber"] + `</td>`;
+                    $('#tbl_statistics tbody').append(Row);
+
+                }
+                //$("#tbl_statistics").DataTable();
+                $("#myModal_reload").modal("hide");
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+</script>

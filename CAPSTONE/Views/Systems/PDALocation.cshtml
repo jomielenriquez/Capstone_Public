@@ -1,0 +1,43 @@
+﻿
+@{
+    ViewBag.Title = "PDALocation";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1 id="HolderName"></h1>
+<div id="divLocation">
+
+</div>
+
+<script type="text/javascript">
+    $('li a').removeClass("active");
+    $('#tg-pdalocation').addClass("active");
+    $(document).ready(function () {
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_get_pda_location",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                //$("#select_Violation").html('<option selected="selected">Please select</option>');
+                var Json_Data = JSON.parse(data);
+                console.log(Json_Data);
+
+                $("#HolderName").html("PDA User: " + Json_Data[0]["fname"] + " " + Json_Data[0]["lname"])
+                $("#divLocation").html('<iframe src="https://maps.google.com/maps?q=' + Json_Data[0]["latitude"] + ',' + Json_Data[0]["longetude"] +'&hl=es;z=14&amp;output=embed" width="100%" height="70vh" frameborder="0" style="border:0;height:80vh !important"></iframe>');
+                //for (var i = 0; i < Json_Data.length; i++) {
+                //    $("#select_Violation").append("<option value='" + Json_Data[i]["vid"] + "'>" + Json_Data[i]["vdesc"] + "</option>")
+                //}
+                $("#myModal_reload").modal('hide');
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    })
+</script>

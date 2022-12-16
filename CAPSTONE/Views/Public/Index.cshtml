@@ -1,0 +1,69 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+
+<input type="text" class="form-control round-form" placeholder="Enter Plate Number Here.." style="text-align:center; margin-bottom:50px;" id="inp_platenumber" onchange="updateGrid()">
+
+<section id="no-more-tables">
+    @* tbl enforcer account will be inserted here programmatically *@
+</section>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        //updateGrid();
+    });
+
+    function updateGrid() {
+        var plate = "%" + $("#inp_platenumber").val() + "%";
+        console.log(plate);
+
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        document.getElementById("no-more-tables").innerHTML = `
+            <table class="table table-bordered table-striped table-condensed cf" id="tbl_Confiscated">
+                    <thead class="cf">
+                        <tr>
+                            <th>Fullname</th>
+                            <th>Plate Number</th>
+                            <th>Date of Apprehension</th>
+                            <th>Violation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>`;
+        $.ajax({
+            type: "POST",
+            url: "/Systems/prop_get_record_by_plateno",
+            dataType: "text",
+            data: JSON.stringify({
+                "platenumber": plate
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                var Json_Data = JSON.parse(data);
+                for (var i = 0; i < Json_Data.length; i++) {
+                    if (Json_Data[i]["violation"] != "DRIVING WITHOUT DRIVER'S LICENSE" && Json_Data[i]["isSettled"] != 1) {
+                        var Row = `<tr>
+                                <td class="Full Name" data-title="Full Name">` + Json_Data[i]["fname"] + `</td>
+                                <td class="fullname" data-title="Plate Number">` + Json_Data[i]["plateno"] + `</td>
+                                <td class="fullname" data-title="Date Of Apprehension">` + Json_Data[i]["dateofapprehension"].split("T")[0] + `</td>
+                                <td class="UserName" data-title="Violation">`+ Json_Data[i]["vdesc"] + `</td>`;
+                        $('#tbl_Confiscated tbody').append(Row);
+
+                    }
+                }
+                $('#tbl_Confiscated').DataTable();
+                $("#myModal_reload").modal("hide");
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+</script>

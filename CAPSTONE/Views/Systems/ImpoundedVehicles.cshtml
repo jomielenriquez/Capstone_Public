@@ -1,0 +1,372 @@
+﻿
+@{
+    ViewBag.Title = "Impounded Vehicles";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<div class="row mt">
+    <div class="col-lg-12">
+        <div class="content-panel">
+            <h4><i class="fa fa-angle-right"></i> Impounded Vehicles </h4>
+            <section id="no-more-tables">
+                @* table will be inserted here *@
+            </section>
+        </div>
+    </div>
+</div>
+<div class="modal fade " id="myModal_clear" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="myModalLabel">Are you sure you want to clear this record?</h4>
+                <input id="input_rowid" style="display:none" />
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal style-form">
+                    <input typw="text" id="input_id" style="display:none" />
+                    <div class="form-group">
+                        <table style="margin:auto" id="tbl_clear">
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-primary" onclick="ClearRecord()">Yes</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Delete modal *@
+<div class="modal fade " id="myModal_delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="myModalLabel">Are you sure you want to delete this record?</h4>
+                <input id="input_rowid" style="display:none" />
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal style-form">
+                    <input typw="text" id="input_id" style="display:none" />
+                    <div class="form-group">
+                        <table style="margin:auto" id="tbl_delete">
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-primary" onclick="proceeddelete()">Yes</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Edit modal *@
+
+<div class="modal fade " id="myModal_edit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="myModalLabel">Edit Record</h4>
+                <input id="input_editid" style="display:none" />
+            </div>
+            <div class="modal-body">
+                @*<form class="form-horizontal style-form">
+                        <input typw="text" id="input_id" style="display:none" />
+                        <div class="form-group">
+                            <table style="margin:auto" id="tbl_clear">
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>*@
+
+                <table class="table  table-condensed c" id="tbl_apprehention">
+                    <tbody>
+                        <tr>
+                            <td style="text-align:center;" colspan="3">Last Name</td>
+                            <td style="text-align:center;" colspan="2">First Name</td>
+                            <td style="text-align:center;">MI</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"><input type="text" class="form-control" id="input_lname"></td>
+                            <td colspan="2"><input type="text" class="form-control" id="input_fname"></td>
+                            <td><input type="text" class="form-control" id="input_mi" size="1" maxlength="1"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="6">
+                                <h5>Vehicle Type</h5>
+                                <input type="text" class="form-control" id="input_vehicle">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6">
+                                <h5>Date of Apprehension</h5>
+                                <input type="date" class="form-control" id="input_dateofapprehension">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="1"><h5>Plate No.</h5></td>
+                            <td colspan="5"><input type="text" class="form-control" id="input_plateno"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"><h5>Violation</h5></td>
+                            <td colspan="3">
+                                <select class="form-control" name="select_Violation" id="select_Violation">
+                                    <option selected="selected">Please select</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="SaveEdit()">Save</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $('li a').removeClass("active");
+    $('#tg-impounded').addClass("active");
+
+    $(document).ready(function () {
+        updateGrid();
+        //$("#myModal_reload").modal("hide"); // remove when API is working
+
+        // get violation drop down
+        $.ajax({
+            type: "POST",
+            url: "/Systems/get_violation",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                $("#select_Violation").html('<option selected="selected">Please select</option>');
+                var Json_Data = JSON.parse(data);
+                //console.log(Json_Data);
+                for (var i = 0; i < Json_Data.length; i++) {
+                    $("#select_Violation").append("<option value='" + Json_Data[i]["vid"] + "'>" + Json_Data[i]["vdesc"] + "</option>")
+                }
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    });
+
+    function updateGrid() {
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        document.getElementById("no-more-tables").innerHTML = `
+                <table class="table table-bordered table-striped table-condensed cf" id="tbl_Impounded">
+                    <thead class="cf">
+                        <tr>
+                            <th>Name</th>
+                            <th>Violation</th>
+                            <th>Plate No.</th>
+                            <th>Vehicle Type</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>`;
+
+        $.ajax({
+            type: "POST",
+            url: "/Systems/prop_get_confiscated_license",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                var Json_Data = JSON.parse(data);
+                for (var i = 0; i < Json_Data.length; i++) {
+                    if (Json_Data[i]["violation"] == "DRIVING WITHOUT DRIVER'S LICENSE" && Json_Data[i]["isSettled"] != 1) {
+                        var Row = `<tr id="` + Json_Data[i]["tid"] + `"><td class="Name" data-title="Name">` + Json_Data[i]["fname"] + `</td>
+                                <td class="Violation" data-title="Violation">`+ Json_Data[i]["violation"] + `<span class="vid" style="display:none">` + Json_Data[i]["vid"] + `</span></td>
+                                <td class="PlateNumber" data-title="PlateNumber">`+ Json_Data[i]["plateno"] + `</td>
+                                <td class="VehicleType" data-title="VehicleType">`+ Json_Data[i]["vehicletype"] + `</td>
+                                <td class="DateOfApprehension" data-title="DateOfApprehension">`+ Json_Data[i]["dateofapprehension"].split('T')[0] + `</td>
+                                <td>`+ Json_Data[i]["PendingStatus"] + `</td>
+                                <td class="Action" data-title="Action">
+                                    <button type="button" class="btn btn-round btn-info btn-sm" onclick="ClearBtnOnclick(this)"><i class="fa fa-check-square-o"></i> Clear</button>
+                                    <button type="button" class="btn btn-round btn-danger btn-sm" onclick="btn_delete(this)"><i class="fa fa-trash-o"></i> Delete</button>
+                                    <button type="button" class="btn btn-round btn-primary btn-sm" onclick="openModalEdit(this)"><i class="fa fa-pencil-square-o"></i> Edit</button>
+                                </td>`;
+                        $('#tbl_Impounded tbody').append(Row);
+                    }
+                }
+                $('#tbl_Impounded').DataTable();
+                $("#myModal_reload").modal("hide");
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+    function openModalEdit(btn) {
+        var target_row = $(btn).closest('tr');
+        var rowid = target_row.attr('id'),
+            rowname = target_row.find('td.Name').text(),
+            rowviolation = target_row.find('td span.vid').text(),
+            rowplatenumber = target_row.find('td.PlateNumber').text(),
+            rowvehicle = target_row.find('td.VehicleType').text(),
+            rowdateofapprehension = target_row.find('td.DateOfApprehension').text();
+
+        $("#input_editid").val(rowid);
+        $("#input_lname").val(rowname.split(' ')[2]);
+        $("#input_fname").val(rowname.split(' ')[0]);
+        $("#input_mi").val(rowname.split(' ')[1]);
+        $("#input_vehicle").val(rowvehicle);
+        $("#input_dateofapprehension").val(rowdateofapprehension);
+        $("#input_plateno").val(rowplatenumber);
+        $("#select_Violation").val(rowviolation);
+
+        $("#myModal_edit").modal("show");
+    }
+    function SaveEdit() {
+        $("#myModal_edit").modal("hide");
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_update_impounded_vehicle",
+            dataType: "text",
+            data: JSON.stringify({
+                "name": $("#input_fname").val() + ' ' + $("#input_mi").val() + ' ' + $("#input_lname").val(),
+                "vehicle": $("#input_vehicle").val(),
+                "dateofapprehension": $("#input_dateofapprehension").val(),
+                "platenumber": $("#input_plateno").val(),
+                "violationid": $("#select_Violation").val(),
+                "editid": $("#input_editid").val(),
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                gritter("Success", "Successfully Cleared");
+
+                $('#tbl_clear tbody').html("");
+                updateGrid();
+            },
+            error: function (textStatus, errorThrown) {
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+    function ClearBtnOnclick(btn) {
+        var target_row = $(btn).closest('tr');
+        var rowid = target_row.attr('id'),
+            rowname = target_row.find('td.Name').text(),
+            rowviolation = target_row.find('td.Violation').text(),
+            rowoplatenumber = target_row.find('td.PlateNumber').text(),
+            rowvehicletype = target_row.find('td.VehicleType').text(),
+            rowdateofapprehension = target_row.find('td.DateOfApprehension').text();
+        $("#input_id").val(rowid);
+        $("#tbl_clear tbody").html("");
+        $("#tbl_clear tbody").append(
+            `<tr><td>Name: </td><td>` + rowname + `</td></tr>
+            <tr><td>Violation: </td><td>`+ rowviolation + `</td></tr>
+            <tr><td>Plate No.: </td><td>`+ rowoplatenumber + `</td></tr>
+            <tr><td>Vihicle Type: </td><td>`+ rowvehicletype + `</td></tr>
+            <tr><td>Date Of Apprehension: </td><td>`+ rowdateofapprehension + `</td></tr>`
+        )
+        $("#myModal_clear").modal("show");
+        //updateGrid();
+    }
+    function ClearRecord() {
+        $("#myModal_clear").modal("hide");
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        var tid = $("#input_id").val();
+        var clearedby = $("#userName").html();
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_clear_citation",
+            dataType: "text",
+            data: JSON.stringify({
+                "tid": tid,
+                "clearedby": clearedby
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                gritter("Success", "Successfully Cleared");
+
+                $('#tbl_clear tbody').html("");
+                updateGrid();
+            },
+            error: function (textStatus, errorThrown) {
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+    function btn_delete(btn) {
+        var target_row = $(btn).closest('tr');
+        var rowid = target_row.attr('id'),
+            rowname = target_row.find('td.Name').text(),
+            rowviolation = target_row.find('td.Violation').text(),
+            rowvehicle = target_row.find('td.VehicleType').text(),
+            rowplatenumber = target_row.find('td.PlateNumber').text();
+        $("#input_id").val(rowid);
+        $("#tbl_delete tbody").html("");
+        $("#tbl_delete tbody").append(
+            `<tr><td>Name: </td><td>` + rowname + `</td></tr>
+            <tr><td>Violation: </td><td>`+ rowviolation + `</td></tr>
+            <tr><td>Vehicle Type: </td><td>`+ rowvehicle + `</td></tr>
+            <tr><td>Plate No.: </td><td>`+ rowplatenumber + `</td></tr>`
+        )
+
+        $("#myModal_delete").modal("show");
+    }
+    function proceeddelete() {
+        $("#myModal_delete").modal("hide");
+        //$("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        $.ajax({
+            type: "POST",
+            url: "/Systems/delete_citation",
+            dataType: "text",
+            data: JSON.stringify({
+                "id": $("#input_id").val()
+            }),
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+                $("#myModal_reload").modal('hide');
+                if (data == "SUCCESS") {
+                    gritter("Success", "Successfully Deleted");
+
+                    $('#tbl_apprehention tbody').html("");
+
+                    updateGrid();
+
+                }
+            },
+            error: function (textStatus, errorThrown) {
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+</script>
+
+
+

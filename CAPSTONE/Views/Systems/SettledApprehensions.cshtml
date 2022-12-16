@@ -1,0 +1,155 @@
+﻿
+@{
+    ViewBag.Title = "Settled Apprehensions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row mt">
+    <div class="col-lg-12">
+        <div class="content-panel">
+            <h4><i class="fa fa-angle-right"></i>Records of Settled Apprehensions</h4>
+            <section id="no-more-tables">
+                @* tbl cleared will be inserted programmatically *@
+            </section>
+        </div>
+    </div>
+</div>
+@*<div class="modal fade " id="myModal_delete" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="myModalLabel">Are you sure you want to delete this record?</h4>
+                <input id="input_rowid" style="display:none" />
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal style-form">
+                    <input typw="text" id="input_id" style="display:none" />
+                    <div class="form-group">
+                        <table style="margin:auto" id="tbl_delete">
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">No</button>
+                <button type="button" class="btn btn-primary" onclick="proceeddelete()">Yes</button>
+
+            </div>
+        </div>
+    </div>
+</div>*@
+
+<script type="text/javascript">
+    $('li a').removeClass("active");
+    $('#tg-settled').addClass("active");
+
+    $(document).ready(function () {
+        updateGrid();
+        //$("#myModal_reload").modal("hide"); // remove when API is working
+    });
+
+    function updateGrid() {
+        $("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+        document.getElementById("no-more-tables").innerHTML = `
+            <table class="table table-bordered table-striped table-condensed cf" id="tbl_cleared">
+                    <thead class="cf">
+                        <tr>
+                            <th>Name</th>
+                            <th>Address</th>
+                            <th>License No.</th>
+                            <th>Plate No.</th>
+                            <th>Offenses</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>`;
+
+
+        $.ajax({
+            type: "POST",
+            url: "/Systems/proc_get_setteled_apprehensions",
+            dataType: "text",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                data = someerm(data);
+
+                var Json_Data = JSON.parse(data);
+                console.log(Json_Data);
+                for (var i = 0; i < Json_Data.length; i++) {
+                    if (Json_Data[i]["isSettled"] == 1) {
+                        //var Row = `<tr id="` + Json_Data[i]["tid"] +`"><td class="Name" data-title="Name">` + Json_Data[i]["fname"] + `</td>
+                        var Row = `<tr><td class="Name" data-title="Name">` + Json_Data[i]["fname"] + `</td>
+                                <td class="Address" data-title="Address">`+ Json_Data[i]["address"] + `</td>
+                                <td class="LicenseNo" data-title="LicenseNo">`+ Json_Data[i]["licenseno"] + `</td>
+                                <td class="PlateNo" data-title="PlateNo">`+ Json_Data[i]["plateno"] + `</td>
+                                <td class="Offenses" data-title="Offenses">`+ Json_Data[i]["Offenses"] + `</td>`;
+                                //<td class="Action" data-title="Action">
+                                //    <button type="button" class="btn btn-round btn-danger btn-sm" onclick="btn_delete(this)"><i class="fa fa-trash-o"></i> Delete</button>
+                                //</td>`;
+                        $('#tbl_cleared tbody').append(Row);
+                    }
+                }
+                $('#tbl_cleared').DataTable();
+                $("#myModal_reload").modal("hide");
+
+            },
+            error: function (textStatus, errorThrown) {
+                // Success = false;//doesn't go here
+                gritter("Error", "Error processing the request.");
+            }
+        });
+    }
+    //function btn_delete(btn) {
+    //    var target_row = $(btn).closest('tr');
+    //    var rowid = target_row.attr('id'),
+    //        rowname = target_row.find('td.Name').text(),
+    //        rowaddress = target_row.find('td.Address').text(),
+    //        rowlicenseNo = target_row.find('td.LicenseNo').text(),
+    //        rowplatenumber = target_row.find('td.PlateNo').text();
+    //    $("#input_id").val(rowid);
+    //    $("#tbl_delete tbody").html("");
+    //    $("#tbl_delete tbody").append(
+    //        `<tr><td>Name: </td><td>` + rowname + `</td></tr>
+    //        <tr><td>Address: </td><td>`+ rowaddress + `</td></tr>
+    //        <tr><td>License No.: </td><td>`+ rowlicenseNo + `</td></tr>
+    //        <tr><td>Plate No.: </td><td>`+ rowplatenumber + `</td></tr>`
+    //    )
+
+    //    $("#myModal_delete").modal("show");
+    //}
+    //function proceeddelete() {
+    //    $("#myModal_delete").modal("hide");
+    //    //$("#myModal_reload").modal({ backdrop: 'static', keyboard: false }, 'show');
+    //    $.ajax({
+    //        type: "POST",
+    //        url: "/Systems/delete_citation",
+    //        dataType: "text",
+    //        data: JSON.stringify({
+    //            "id": $("#input_id").val()
+    //        }),
+    //        contentType: "application/json; charset=utf-8",
+    //        success: function (data) {
+    //            data = someerm(data);
+    //            $("#myModal_reload").modal('hide');
+    //            if (data == "SUCCESS") {
+    //                gritter("Success", "Successfully Deleted");
+
+    //                $('#tbl_apprehention tbody').html("");
+
+    //                updateGrid();
+                    
+    //            }
+    //        },
+    //        error: function (textStatus, errorThrown) {
+    //            gritter("Error", "Error processing the request.");
+    //        }
+    //    });
+    //}
+</script>
+
+
+
