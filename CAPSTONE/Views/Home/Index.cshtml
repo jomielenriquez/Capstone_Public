@@ -4,15 +4,29 @@
     Layout = "~/Views/Shared/_Index.cshtml";
 }
 
-<input type="text" class="form-control round-form" placeholder="Enter Plate Number Here.." style="text-align:center; margin-bottom:50px;" id="inp_platenumber" onchange="updateGrid()">
+<input type="text" class="form-control round-form" title="Please input text with this fomat ABC-12345" placeholder="eg. ABC-12345" style="text-align:center; margin-bottom:50px;" id="inp_platenumber" onchange="updateGrid()"  maxlength="9">
 
 <section id="no-more-tables">
     @* tbl enforcer account will be inserted here programmatically *@
 </section>
 
 <script type="text/javascript">
+    String.prototype.splice = function (idx, rem, str) {
+        return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
+    };
+
     $(document).ready(function () {
         //updateGrid();
+        var tele = document.querySelector('#inp_platenumber');
+
+        tele.addEventListener('keyup', function (e) {
+            if (event.key != 'Backspace' && (tele.value.length === 3)) {
+                tele.value += '-';
+                if ($("#inp_platenumber").val()[3] != "-") {
+                    tele.value.splice(3, 0, "-")
+                }
+            }
+        });
     });
 
     function updateGrid() {
