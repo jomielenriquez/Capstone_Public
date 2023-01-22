@@ -41,10 +41,6 @@
 
     $(document).ready(function () {
         //updateGrid();
-        if (!imnotarobot) {
-            alert("Please check I'm not a robot first");
-            return;
-        }
         var tele = document.querySelector('#inp_platenumber');
 
         tele.addEventListener('keyup', function (e) {
@@ -58,6 +54,12 @@
     });
 
     function updateGrid() {
+
+        if (!imnotarobot) {
+            alert("CAPTCHA required");
+            return;
+        }
+
         var plate = "%" + $("#inp_platenumber").val() + "%";
         console.log(plate);
 
