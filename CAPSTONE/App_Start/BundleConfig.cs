@@ -33,6 +33,9 @@ namespace CAPSTONE
                       "~/Content/jquery.gritter.css",
                       "~/Content/CustomStyle.css"
             ));
+            bundles.Add(new StyleBundle("~/Content/Custom").Include(
+                      "~/Content/custom.css"
+            ));
             bundles.Add(new StyleBundle("~/Content/DataTable").Include(
                 "~/Content/DataTable.css",
                 "~/Content/buttonsDataTable.css"

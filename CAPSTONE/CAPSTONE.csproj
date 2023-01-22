@@ -172,6 +172,7 @@
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
     <Content Include="Content\buttonsDataTable.css" />
+    <Content Include="Content\custom.css" />
     <Content Include="Content\CustomStyle.css" />
     <Content Include="Content\DataTable.css" />
     <Content Include="Content\jquery.gritter.css" />
