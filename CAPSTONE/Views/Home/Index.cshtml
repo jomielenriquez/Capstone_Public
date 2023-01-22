@@ -3,170 +3,11 @@
     ViewBag.Title = "Tanauan Violation Checker";
     Layout = "~/Views/Shared/_Index.cshtml";
 }
-<style type="text/css">
-    * {
-        outline: none;
-    }
-
-    html,
-    body {
-        height: 100%;
-        min-height: 100%;
-    }
-
-    body {
-        margin: 0;
-        background-color: #c2edea;
-    }
-    .tb {
-        display: table;
-        width: 100%;
-    }
-
-    .td {
-        display: table-cell;
-        vertical-align: middle;
-    }
-
-    input,
-    button {
-        color: #fff;
-        font-family: Nunito;
-        padding: 0;
-        margin: 0;
-        border: 0;
-        background-color: transparent;
-    }
-
-    #cover {
-        position: absolute;
-        top: 40%;
-        left: 0;
-        right: 0;
-        /*width: 550px;*/
-        padding: 35px;
-        margin: -83px auto 0 auto;
-        background-color: #4ECDC4;
-        border-radius: 20px;
-        box-shadow: 0 10px 40px #ff7c7c, 0 0 0 20px #ffffffeb;
-        transform: scale(0.6);
-    }
-
-    #divcover {
-        height: 96px;
-    }
-
-    input[type="text"] {
-        width: 100%;
-        height: 96px;
-        font-size: 50px;
-        line-height: 1;
-    }
-
-        input[type="text"]::placeholder {
-            color: #c2edea;
-        }
-
-    #s-cover {
-        width: 1px;
-        padding-left: 35px;
-    }
-
-    button {
-        position: relative;
-        display: block;
-        width: 84px;
-        height: 96px;
-        cursor: pointer;
-    }
-
-    #s-circle {
-        position: relative;
-        top: -8px;
-        left: 0;
-        width: 75px;
-        height: 75px;
-        margin-top: 0;
-        border-width: 15px;
-        border: 15px solid #fff;
-        background-color: transparent;
-        border-radius: 50%;
-        transition: 0.5s ease all;
-    }
-
-    button span {
-        position: absolute;
-        top: 68px;
-        left: 43px;
-        display: block;
-        width: 45px;
-        height: 15px;
-        background-color: transparent;
-        border-radius: 10px;
-        transform: rotateZ(52deg);
-        transition: 0.5s ease all;
-    }
-
-        button span:before,
-        button span:after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 45px;
-            height: 15px;
-            background-color: #fff;
-            border-radius: 10px;
-            transform: rotateZ(0);
-            transition: 0.5s ease all;
-        }
-
-    #s-cover:hover #s-circle {
-        top: -1px;
-        width: 67px;
-        height: 15px;
-        border-width: 0;
-        background-color: #fff;
-        border-radius: 20px;
-    }
-
-    #s-cover:hover span {
-        top: 50%;
-        left: 56px;
-        width: 25px;
-        margin-top: -9px;
-        transform: rotateZ(0);
-    }
-
-    #s-cover:hover button span:before {
-        bottom: 11px;
-        transform: rotateZ(52deg);
-    }
-
-    #s-cover:hover button span:after {
-        bottom: -11px;
-        transform: rotateZ(-52deg);
-    }
-
-    #s-cover:hover button span:before,
-    #s-cover:hover button span:after {
-        right: -6px;
-        width: 40px;
-        background-color: #fff;
-    }
-
-    section#no-more-tables {
-        position: absolute;
-        top: 60%;
-        left: 40%;
-        right:40%;
-        font-size: 70px;
-        color:#387e79;
-    }
-</style>
-<input type="text" class="form-control round-form" title="Please input text with this fomat ABC-12345" 
-       placeholder="eg. ABC-12345" style="display:none; text-align:center; margin-bottom:50px;"  onchange="updateGrid()"  maxlength="9">
-
+@Styles.Render("~/Content/Custom")
+<script src='https://www.google.com/recaptcha/api.js'></script>
+<input type="text" class="form-control round-form" title="Please input text with this fomat ABC-12345"
+       placeholder="eg. ABC-12345" style="display:none; text-align:center; margin-bottom:50px;" onchange="updateGrid()" maxlength="9">
+<h1 class="instruction">Do you wish to know if plate number has current violation? Look into it. Enter plate number without spaces.</h1>
 <div id="cover">
     <div id="divcover">
         <div class="tb">
@@ -181,17 +22,29 @@
     </div>
 </div>
 
+<div class="g-recaptcha"  data-callback="recaptchaCallback" data-sitekey="6LcW8RkkAAAAAJ2ojaW57ZaYLgAdxPPtZkU_GuOh"></div>
+@* https://www.google.com/recaptcha/admin/site/605678745/setup *@
 <section id="no-more-tables">
     @* tbl enforcer account will be inserted here programmatically *@
 </section>
 
 <script type="text/javascript">
+    var imnotarobot = false;
+    function recaptchaCallback() {
+        //$('#submitBtn').removeAttr('disabled');
+        //alert("test");
+        imnotarobot = true;
+    };
     String.prototype.splice = function (idx, rem, str) {
         return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
     };
 
     $(document).ready(function () {
         //updateGrid();
+        if (!imnotarobot) {
+            alert("Please check I'm not a robot first");
+            return;
+        }
         var tele = document.querySelector('#inp_platenumber');
 
         tele.addEventListener('keyup', function (e) {
